@@ -46,6 +46,36 @@ func main() {
 		return c.SendStatus(http.StatusOK)
 	})
 
+	// nolint: wrapcheck
+	app.Get("/pause", func(c *fiber.Ctx) error {
+		_, err := conn.Write([]byte("pause"))
+		if err != nil {
+			return fiber.ErrInternalServerError
+		}
+
+		return c.SendStatus(http.StatusOK)
+	})
+
+	// nolint: wrapcheck
+	app.Get("/volume/up", func(c *fiber.Ctx) error {
+		_, err := conn.Write([]byte("volume-up"))
+		if err != nil {
+			return fiber.ErrInternalServerError
+		}
+
+		return c.SendStatus(http.StatusOK)
+	})
+
+	// nolint: wrapcheck
+	app.Get("/volume/down", func(c *fiber.Ctx) error {
+		_, err := conn.Write([]byte("volume-down"))
+		if err != nil {
+			return fiber.ErrInternalServerError
+		}
+
+		return c.SendStatus(http.StatusOK)
+	})
+
 	if err := app.Listen(":1378"); !errors.Is(err, http.ErrServerClosed) {
 		pterm.Error.Printf("server start failed %s", err)
 	}
