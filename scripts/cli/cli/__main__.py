@@ -12,22 +12,25 @@ mpv.play(args.movie)
 
 class MPVHandler(socketserver.StreamRequestHandler):
     def handle(self) -> None:
-        cmd = self.rfile.readline().strip()
-        print(f'received command is {cmd}')
-        if cmd == b'play':
-            mpv.command('set_property', 'pause', False)
-        elif cmd == b'pause':
-            mpv.command('set_property', 'pause', True)
-        elif cmd == b'volume-up':
-            vol = mpv.command('get_property', 'volume')
-            if vol is not None:
-                mpv.command('set_property', 'volume', vol + 10)
-        elif cmd == b'volume-down':
-            vol = mpv.command('get_property', 'volume')
-            if vol is not None:
-                mpv.command('set_property', 'volume', vol - 10)
-        else:
-            print('command not found')
+        while True:
+            cmd = self.rfile.readline().strip()
+            print(f'received command is {cmd}')
+            if cmd == b'play':
+                mpv.command('set_property', 'pause', False)
+            elif cmd == b'pause':
+                mpv.command('set_property', 'pause', True)
+            elif cmd == b'volume-up':
+                vol = mpv.command('get_property', 'volume')
+                if vol is not None:
+                    mpv.command('set_property', 'volume', vol + 10)
+            elif cmd == b'volume-down':
+                vol = mpv.command('get_property', 'volume')
+                if vol is not None:
+                    mpv.command('set_property', 'volume', vol - 10)
+            elif cmd == b'':
+                return
+            else:
+                print('command not found')
 
 server = socketserver.TCPServer(("0.0.0.0", 1378), MPVHandler)
 
