@@ -15,9 +15,17 @@ class MPVHandler(socketserver.StreamRequestHandler):
         cmd = self.rfile.readline().strip()
         print(f'received command is {cmd}')
         if cmd == b'play':
-            print(mpv.command('set_property', 'pause', False))
+            mpv.command('set_property', 'pause', False)
         elif cmd == b'pause':
-            print(mpv.command('set_property', 'pause', True))
+            mpv.command('set_property', 'pause', True)
+        elif cmd == b'volume-up':
+            vol = mpv.command('get_property', 'volume')
+            if vol is not None:
+                mpv.command('set_property', 'volume', vol + 10)
+        elif cmd == b'volume-down':
+            vol = mpv.command('get_property', 'volume')
+            if vol is not None:
+                mpv.command('set_property', 'volume', vol - 10)
         else:
             print('command not found')
 
