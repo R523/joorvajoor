@@ -2,15 +2,20 @@ package main
 
 import (
 	"errors"
+	"log"
 	"net"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/pterm/pterm"
 )
 
-const NArgs = 2
+const (
+	NArgs  = 2
+	MaxAge = 3600
+)
 
 func main() {
 	if err := pterm.DefaultBigText.WithLetters(
@@ -33,13 +38,16 @@ func main() {
 
 		return
 	}
+	conn.SetDeadline(time.Now().Add(time.Hour))
 
 	app := fiber.New()
+	api := app.Group("/api")
 
 	// nolint: wrapcheck
-	app.Get("/play", func(c *fiber.Ctx) error {
-		_, err := conn.Write([]byte("play"))
+	api.Get("/play", func(c *fiber.Ctx) error {
+		_, err := conn.Write([]byte("play\n"))
 		if err != nil {
+			log.Println(err)
 			return fiber.ErrInternalServerError
 		}
 
@@ -47,9 +55,10 @@ func main() {
 	})
 
 	// nolint: wrapcheck
-	app.Get("/pause", func(c *fiber.Ctx) error {
-		_, err := conn.Write([]byte("pause"))
+	api.Get("/pause", func(c *fiber.Ctx) error {
+		_, err := conn.Write([]byte("pause\n"))
 		if err != nil {
+			log.Println(err)
 			return fiber.ErrInternalServerError
 		}
 
@@ -57,9 +66,10 @@ func main() {
 	})
 
 	// nolint: wrapcheck
-	app.Get("/volume/up", func(c *fiber.Ctx) error {
-		_, err := conn.Write([]byte("volume-up"))
+	api.Get("/volume-up", func(c *fiber.Ctx) error {
+		_, err := conn.Write([]byte("volume-up\n"))
 		if err != nil {
+			log.Println(err)
 			return fiber.ErrInternalServerError
 		}
 
@@ -67,13 +77,24 @@ func main() {
 	})
 
 	// nolint: wrapcheck
-	app.Get("/volume/down", func(c *fiber.Ctx) error {
-		_, err := conn.Write([]byte("volume-down"))
+	api.Get("/volume-down", func(c *fiber.Ctx) error {
+		_, err := conn.Write([]byte("volume-down\n"))
 		if err != nil {
+			log.Println(err)
 			return fiber.ErrInternalServerError
 		}
 
 		return c.SendStatus(http.StatusOK)
+	})
+
+	app.Static("/", "web/joorvajoor/out", fiber.Static{
+		Compress:      true,
+		ByteRange:     false,
+		Browse:        false,
+		Index:         "index.html",
+		CacheDuration: time.Hour,
+		MaxAge:        MaxAge,
+		Next:          nil,
 	})
 
 	if err := app.Listen(":1378"); !errors.Is(err, http.ErrServerClosed) {
