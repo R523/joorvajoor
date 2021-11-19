@@ -40,7 +40,7 @@ const Home: NextPage = () => {
       <button onClick={control("volume-up")}>Vol+</button>
       <button onClick={control("volume-down")}>Vol-</button>
 
-      {isAdmin ? <p>You are not admin</p> : <p> you are admin </p>}
+      {isAdmin ? <p>You are admin</p> : <p> you are not admin </p>}
     </div>
   );
 };
