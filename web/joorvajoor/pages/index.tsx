@@ -8,7 +8,7 @@ const Home: NextPage = () => {
 
   useEffect(() => {
     const timer = setInterval(() => {
-      fetch("/api/distance").then((resp) => {
+      fetch("/api/admin").then((resp) => {
         if (resp.ok) {
           setIsAdmin(true);
         }
