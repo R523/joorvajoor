@@ -10,11 +10,16 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/pterm/pterm"
+	"github.com/r523/joorvajoor/internal/rfid"
+	"periph.io/x/conn/v3/gpio"
+	"periph.io/x/host/v3/rpi"
 )
 
 const (
-	NArgs  = 2
-	MaxAge = 3600
+	NArgs     = 2
+	MaxAge    = 3600
+	Gain      = 5
+	AllowedID = "0cdb074999"
 )
 
 func main() {
@@ -86,6 +91,35 @@ func main() {
 
 		return c.SendStatus(http.StatusOK)
 	})
+
+	go func() {
+		var (
+			ResetPin gpio.PinOut = rpi.P1_13
+			IRQPin   gpio.PinIn  = rpi.P1_11
+		)
+
+		rid, err := rfid.Setup("/dev/spidev0.0", ResetPin, IRQPin, Gain)
+		if err != nil {
+			pterm.Error.Printf("cannot create rfid device %s\n", err)
+
+			return
+		}
+
+		pterm.Info.Println("Started rfid reader.")
+
+		for {
+			id := rfid.ReadRFIDWithRetries(rid)
+
+			pterm.Info.Println(id)
+
+			if id != AllowedID {
+				pterm.Error.Printf("you cannot have access %s\n", id)
+
+				continue
+			}
+
+		}
+	}()
 
 	app.Static("/", "web/joorvajoor/out", fiber.Static{
 		Compress:      true,
