@@ -43,7 +43,10 @@ func main() {
 
 		return
 	}
+
 	conn.SetDeadline(time.Now().Add(time.Hour))
+
+	isAdminChan := make(chan struct{})
 
 	app := fiber.New()
 	api := app.Group("/api")
@@ -53,6 +56,7 @@ func main() {
 		_, err := conn.Write([]byte("play\n"))
 		if err != nil {
 			log.Println(err)
+
 			return fiber.ErrInternalServerError
 		}
 
@@ -64,6 +68,7 @@ func main() {
 		_, err := conn.Write([]byte("pause\n"))
 		if err != nil {
 			log.Println(err)
+
 			return fiber.ErrInternalServerError
 		}
 
@@ -75,6 +80,7 @@ func main() {
 		_, err := conn.Write([]byte("volume-up\n"))
 		if err != nil {
 			log.Println(err)
+
 			return fiber.ErrInternalServerError
 		}
 
@@ -86,10 +92,21 @@ func main() {
 		_, err := conn.Write([]byte("volume-down\n"))
 		if err != nil {
 			log.Println(err)
+
 			return fiber.ErrInternalServerError
 		}
 
 		return c.SendStatus(http.StatusOK)
+	})
+
+	// nolint: wrapcheck
+	api.Get("/admin", func(c *fiber.Ctx) error {
+		select {
+		case <-isAdminChan:
+			return c.SendStatus(http.StatusOK)
+		default:
+			return c.SendStatus(http.StatusUnauthorized)
+		}
 	})
 
 	go func() {
@@ -112,12 +129,13 @@ func main() {
 
 			pterm.Info.Println(id)
 
-			if id != AllowedID {
-				pterm.Error.Printf("you cannot have access %s\n", id)
+			if id == AllowedID {
+				pterm.Info.Printf("you have access %s\n", id)
 
-				continue
+				close(isAdminChan)
+
+				return
 			}
-
 		}
 	}()
 
