@@ -12,6 +12,7 @@ import (
 	"github.com/pterm/pterm"
 	"github.com/r523/joorvajoor/internal/rfid"
 	"periph.io/x/conn/v3/gpio"
+	"periph.io/x/host/v3"
 	"periph.io/x/host/v3/rpi"
 )
 
@@ -31,6 +32,12 @@ func main() {
 		_ = err
 	}
 
+	if _, err := host.Init(); err != nil {
+		pterm.Error.Printf("host initiation failed %s\n", err)
+
+		return
+	}
+
 	if len(os.Args) != NArgs {
 		pterm.Error.Printf("joorvajoor <player_host>")
 
@@ -43,8 +50,6 @@ func main() {
 
 		return
 	}
-
-	conn.SetDeadline(time.Now().Add(time.Hour))
 
 	isAdminChan := make(chan struct{})
 
