@@ -4,7 +4,7 @@ import argparse
 from python_mpv_jsonipc import MPV
 
 parser = argparse.ArgumentParser(description='remove controlled player')
-parser.add_argument('movie', metavar="movie", type=str, nargs='?', help='movie you want to play', default='/Users/parham/Downloads/SampleVideo_1280x720_30mb.mp4')
+parser.add_argument('movie', metavar="movie", type=str, nargs='?', help='movie you want to play', default='/Users/raha/Downloads/SampleVideo_1280x720_30mb.mp4')
 args = parser.parse_args()
 
 mpv = MPV()
